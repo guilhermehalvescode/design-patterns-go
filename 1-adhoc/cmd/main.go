@@ -13,9 +13,9 @@ type APIResponse[K any] struct {
 }
 
 type Notification struct {
-	ID      int    `json:"id"`
+	ID      string `json:"id"`
 	Message string `json:"message"`
-	UserID  int    `json:"user_id"`
+	UserID  string `json:"user_id"`
 }
 
 type User struct {
@@ -34,9 +34,10 @@ func main() {
 		{ID: "5", Name: "Eve"},
 	}
 
-	engine.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, APIResponse[string]{Message: "pong", Timestamp: time.Now().Unix(), Data: "pong"})
-	})
+	notifications := []Notification{
+		{ID: "1", Message: "Welcome!", UserID: "1"},
+		{ID: "2", Message: "You have a new message.", UserID: "2"},
+	}
 
 	// User routes
 	engine.GET("/users", func(c *gin.Context) {
@@ -91,6 +92,63 @@ func main() {
 			}
 		}
 		c.JSON(404, APIResponse[any]{Message: "User not found", Timestamp: time.Now().Unix()})
+	})
+
+	// Notification routes
+	engine.GET("/notifications", func(c *gin.Context) {
+		c.JSON(200, APIResponse[[]Notification]{Message: "List of notifications", Timestamp: time.Now().Unix(), Data: notifications})
+	})
+
+	engine.GET("/notifications/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		for _, notification := range notifications {
+			if notification.ID == id {
+				c.JSON(200, APIResponse[Notification]{Message: "Notification found", Timestamp: time.Now().Unix(), Data: notification})
+				return
+			}
+		}
+		c.JSON(404, APIResponse[any]{Message: "Notification not found", Timestamp: time.Now().Unix()})
+	})
+
+	engine.POST("/notifications", func(c *gin.Context) {
+		var notification Notification
+		if err := c.ShouldBindJSON(&notification); err != nil {
+			c.JSON(400, APIResponse[any]{Message: "Invalid request", Timestamp: time.Now().Unix()})
+			return
+		}
+		notification.ID = string(len(notifications) + 1)
+		notifications = append(notifications, notification)
+		c.JSON(201, APIResponse[Notification]{Message: "Notification created", Timestamp: time.Now().Unix(), Data: notification})
+	})
+
+	engine.PUT("/notifications/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		var updatedNotification Notification
+		if err := c.ShouldBindJSON(&updatedNotification); err != nil {
+			c.JSON(400, APIResponse[any]{Message: "Invalid request", Timestamp: time.Now().Unix()})
+			return
+		}
+		for i, notification := range notifications {
+			if notification.ID == id {
+				notifications[i] = updatedNotification
+				notifications[i].ID = id
+				c.JSON(200, APIResponse[Notification]{Message: "Notification updated successfully", Timestamp: time.Now().Unix(), Data: notifications[i]})
+				return
+			}
+		}
+		c.JSON(404, APIResponse[any]{Message: "Notification not found", Timestamp: time.Now().Unix()})
+	})
+
+	engine.DELETE("/notifications/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		for i, notification := range notifications {
+			if notification.ID == id {
+				notifications = append(notifications[:i], notifications[i+1:]...)
+				c.JSON(200, APIResponse[any]{Message: "Notification deleted successfully", Timestamp: time.Now().Unix()})
+				return
+			}
+		}
+		c.JSON(404, APIResponse[any]{Message: "Notification not found", Timestamp: time.Now().Unix()})
 	})
 
 	engine.Run(":8080")
