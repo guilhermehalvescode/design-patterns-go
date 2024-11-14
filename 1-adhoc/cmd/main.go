@@ -26,18 +26,9 @@ type User struct {
 func main() {
 	engine := gin.Default()
 
-	users := []User{
-		{ID: "1", Name: "Alice"},
-		{ID: "2", Name: "Bob"},
-		{ID: "3", Name: "Charlie"},
-		{ID: "4", Name: "David"},
-		{ID: "5", Name: "Eve"},
-	}
+	users := []User{}
 
-	notifications := []Notification{
-		{ID: "1", Message: "Welcome!", UserID: "1"},
-		{ID: "2", Message: "You have a new message.", UserID: "2"},
-	}
+	notifications := []Notification{}
 
 	// User routes
 	engine.GET("/users", func(c *gin.Context) {
