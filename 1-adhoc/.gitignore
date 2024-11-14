@@ -27,6 +27,6 @@ go.work.sum
 .stg.env
 .prod.env
 /.vscode
-
-
+**/tpm/*
+**/main
 *.pb.*

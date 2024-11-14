@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/guilhermehalvescode/design-patterns-go/internal/adhoc/domain"
 )
 
 type APIResponse[K any] struct {
@@ -13,10 +12,21 @@ type APIResponse[K any] struct {
 	Data      K      `json:"data,omitempty"`
 }
 
+type Notification struct {
+	ID      int    `json:"id"`
+	Message string `json:"message"`
+	UserID  int    `json:"user_id"`
+}
+
+type User struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 func main() {
 	engine := gin.Default()
 
-	users := []domain.User{
+	users := []User{
 		{ID: "1", Name: "Alice"},
 		{ID: "2", Name: "Bob"},
 		{ID: "3", Name: "Charlie"},
@@ -30,14 +40,14 @@ func main() {
 
 	// User routes
 	engine.GET("/users", func(c *gin.Context) {
-		c.JSON(200, APIResponse[[]domain.User]{Message: "List of users", Timestamp: time.Now().Unix(), Data: users})
+		c.JSON(200, APIResponse[[]User]{Message: "List of users", Timestamp: time.Now().Unix(), Data: users})
 	})
 
 	engine.GET("/users/:id", func(c *gin.Context) {
 		id := c.Param("id")
 		for _, user := range users {
 			if user.ID == id {
-				c.JSON(200, APIResponse[domain.User]{Message: "User found", Timestamp: time.Now().Unix(), Data: user})
+				c.JSON(200, APIResponse[User]{Message: "User found", Timestamp: time.Now().Unix(), Data: user})
 				return
 			}
 		}
@@ -45,18 +55,18 @@ func main() {
 	})
 
 	engine.POST("/users", func(c *gin.Context) {
-		var user domain.User
+		var user User
 		if err := c.ShouldBindJSON(&user); err != nil {
 			c.JSON(400, APIResponse[any]{Message: "Invalid request", Timestamp: time.Now().Unix()})
 			return
 		}
 		users = append(users, user)
-		c.JSON(201, APIResponse[domain.User]{Message: "User created", Timestamp: time.Now().Unix(), Data: user})
+		c.JSON(201, APIResponse[User]{Message: "User created", Timestamp: time.Now().Unix(), Data: user})
 	})
 
 	engine.PUT("/users/:id", func(c *gin.Context) {
 		id := c.Param("id")
-		var user domain.User
+		var user User
 		if err := c.ShouldBindJSON(&user); err != nil {
 			c.JSON(400, APIResponse[any]{Message: "Invalid request", Timestamp: time.Now().Unix()})
 			return
@@ -64,7 +74,7 @@ func main() {
 		for i, u := range users {
 			if u.ID == id {
 				users[i] = user
-				c.JSON(200, APIResponse[domain.User]{Message: "User updated successfully", Timestamp: time.Now().Unix(), Data: user})
+				c.JSON(200, APIResponse[User]{Message: "User updated successfully", Timestamp: time.Now().Unix(), Data: user})
 				return
 			}
 		}
