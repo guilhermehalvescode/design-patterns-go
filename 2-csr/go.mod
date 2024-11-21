@@ -1,6 +1,6 @@
-module github.com/guilhermehalvescode/design-patterns-go/1-adhoc
+module github.com/guilhermehalvescode/design-patterns-go/2-csr
 
-go 1.23.3
+go 1.23.1
 
 require github.com/gin-gonic/gin v1.10.0
 
