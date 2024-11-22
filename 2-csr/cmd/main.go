@@ -10,13 +10,11 @@ import (
 func main() {
 	engine := gin.Default()
 
-	notificationRepository := repository.NewNotificationRepository()
-	notificationService := service.NewNotificationService(notificationRepository)
-
 	userRepository := repository.NewUserRepository()
-	userService := service.NewUserService(userRepository, notificationService)
-
-	userController := controller.NewUserController(userService)
+	userService := service.NewUserService(userRepository)
+	userController := controller.UserController{
+		UserService: userService,
+	}
 
 	// User routes
 	engine.GET("/users", userController.List)
@@ -25,7 +23,12 @@ func main() {
 	engine.PUT("/users/:id", userController.Update)
 	engine.DELETE("/users/:id", userController.Delete)
 
-	notificationController := controller.NewNotificationController(notificationService)
+	notificationRepository := repository.NewNotificationRepository()
+	notificationService := service.NewNotificationService(notificationRepository)
+
+	notificationController := controller.NotificationController{
+		NotificationService: notificationService,
+	}
 	// Notification routes
 	engine.GET("/notifications", notificationController.List)
 	engine.GET("/notifications/:id", notificationController.GetByID)

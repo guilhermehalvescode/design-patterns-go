@@ -1,4 +1,4 @@
-package controller
+package schemas
 
 type APIResponse[K any] struct {
 	Message   string `json:"message,omitempty"`

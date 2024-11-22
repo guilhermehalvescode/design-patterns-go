@@ -6,12 +6,11 @@ import (
 )
 
 type UserService struct {
-	UserRepository      repository.UserRepository
-	NotificationService NotificationService
+	UserRepository repository.UserRepository
 }
 
-func NewUserService(userRepository repository.UserRepository, notificationService NotificationService) UserService {
-	return UserService{UserRepository: userRepository, NotificationService: notificationService}
+func NewUserService(userRepository repository.UserRepository) UserService {
+	return UserService{UserRepository: userRepository}
 }
 
 func (s *UserService) List() []domain.User {
