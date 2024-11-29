@@ -18,25 +18,29 @@ func (nc *NotificationController) ListenEvents(eventsChan <-chan domain.Event) {
 }
 
 func (nc *NotificationController) List(c *gin.Context) {
-	notifications := nc.NotificationService.List()
+	notifications, err := nc.NotificationService.List()
+	if err != nil {
+		c.JSON(500, schemas.NewAPIMessageResponse("Internal server error"))
+		return
+	}
 	c.JSON(200, schemas.NewAPIResponse("List of notifications", notifications))
 }
 
 func (nc *NotificationController) GetByID(c *gin.Context) {
-	notification := nc.NotificationService.GetByID(c.Param("id"))
-	if notification.ID != "" {
-		c.JSON(200, schemas.NewAPIResponse("Notification found", notification))
+	notification, err := nc.NotificationService.GetByID(c.Param("id"))
+	if err != nil {
+		c.JSON(404, schemas.NewAPIMessageResponse(err.Error()))
 		return
 	}
-	c.JSON(404, schemas.NewAPIMessageResponse("Notification not found"))
+	c.JSON(200, schemas.NewAPIResponse("Notification found", notification))
 }
 
 func (nc *NotificationController) Delete(c *gin.Context) {
 	id := c.Param("id")
-	if nc.NotificationService.Delete(id) {
-		c.JSON(200, schemas.NewAPIMessageResponse("Notification deleted"))
+	_, err := nc.NotificationService.Delete(id)
+	if err != nil {
+		c.JSON(404, schemas.NewAPIMessageResponse(err.Error()))
 		return
 	}
-
-	c.JSON(404, schemas.NewAPIMessageResponse("Notification not found"))
+	c.JSON(200, schemas.NewAPIMessageResponse("Notification deleted"))
 }

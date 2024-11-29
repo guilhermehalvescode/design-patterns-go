@@ -14,28 +14,36 @@ func NewUserService(userRepository repository.UserRepository, eventChan chan dom
 	return UserService{UserRepository: userRepository, EventChan: eventChan}
 }
 
-func (s *UserService) List() []domain.User {
-	return s.UserRepository.List()
+func (s *UserService) List() ([]domain.User, error) {
+	return s.UserRepository.List(), nil
 }
 
-func (s *UserService) GetByID(id string) domain.User {
+func (s *UserService) GetByID(id string) (domain.User, error) {
 	return s.UserRepository.GetByID(id)
 }
 
-func (s *UserService) Create(user domain.User) domain.User {
-	user = s.UserRepository.Create(user)
-	s.EventChan <- domain.UserCreatedEvent{UserID: user.ID}
-	return user
-}
-
-func (s *UserService) Update(id string, user domain.User) domain.User {
-	newUser := s.UserRepository.Update(id, user)
-	if newUser.ID != "" {
-		s.EventChan <- domain.UserUpdatedEvent{UserID: newUser.ID}
+func (s *UserService) Create(user domain.User) (domain.User, error) {
+	user, err := s.UserRepository.Create(user)
+	if err != nil {
+		return domain.User{}, err
 	}
-	return newUser
+	s.EventChan <- domain.UserCreatedEvent{UserID: user.ID}
+	return user, nil
 }
 
-func (s *UserService) Delete(id string) bool {
-	return s.UserRepository.Delete(id)
+func (s *UserService) Update(id string, user domain.User) (domain.User, error) {
+	newUser, err := s.UserRepository.Update(id, user)
+	if err != nil {
+		return domain.User{}, err
+	}
+	s.EventChan <- domain.UserUpdatedEvent{UserID: newUser.ID}
+	return newUser, nil
+}
+
+func (s *UserService) Delete(id string) (bool, error) {
+	deleted, err := s.UserRepository.Delete(id)
+	if err != nil {
+		return false, err
+	}
+	return deleted, nil
 }

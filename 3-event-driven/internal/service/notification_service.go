@@ -13,23 +13,22 @@ func NewNotificationService(notificationRepository repository.NotificationReposi
 	return NotificationService{notificationRepository: notificationRepository}
 }
 
-func (s *NotificationService) List() []domain.Notification {
+func (s *NotificationService) List() ([]domain.Notification, error) {
 	return s.notificationRepository.List()
 }
 
-func (s *NotificationService) GetByID(id string) domain.Notification {
+func (s *NotificationService) GetByID(id string) (domain.Notification, error) {
 	return s.notificationRepository.GetByID(id)
 }
 
-func (s *NotificationService) Create(notification domain.Notification) domain.Notification {
-	notification = s.notificationRepository.Create(notification)
-	return notification
+func (s *NotificationService) Create(notification domain.Notification) (domain.Notification, error) {
+	return s.notificationRepository.Create(notification)
 }
 
-func (s *NotificationService) Update(id string, notification domain.Notification) domain.Notification {
+func (s *NotificationService) Update(id string, notification domain.Notification) (domain.Notification, error) {
 	return s.notificationRepository.Update(id, notification)
 }
 
-func (s *NotificationService) Delete(id string) bool {
+func (s *NotificationService) Delete(id string) (bool, error) {
 	return s.notificationRepository.Delete(id)
 }

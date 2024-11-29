@@ -12,17 +12,21 @@ type UserController struct {
 }
 
 func (uc *UserController) List(c *gin.Context) {
-	users := uc.UserService.List()
+	users, err := uc.UserService.List()
+	if err != nil {
+		c.JSON(500, schemas.NewAPIMessageResponse("Internal server error"))
+		return
+	}
 	c.JSON(200, schemas.NewAPIResponse("List of users", users))
 }
 
 func (uc *UserController) GetByID(c *gin.Context) {
-	user := uc.UserService.GetByID(c.Param("id"))
-	if user.ID != "" {
-		c.JSON(200, schemas.NewAPIResponse("User found", user))
+	user, err := uc.UserService.GetByID(c.Param("id"))
+	if err != nil {
+		c.JSON(404, schemas.NewAPIMessageResponse(err.Error()))
 		return
 	}
-	c.JSON(404, schemas.NewAPIMessageResponse("User not found"))
+	c.JSON(200, schemas.NewAPIResponse("User found", user))
 }
 
 func (uc *UserController) Create(c *gin.Context) {
@@ -31,7 +35,11 @@ func (uc *UserController) Create(c *gin.Context) {
 		c.JSON(400, schemas.NewAPIMessageResponse("Invalid request"))
 		return
 	}
-	user = uc.UserService.Create(user)
+	user, err := uc.UserService.Create(user)
+	if err != nil {
+		c.JSON(400, schemas.NewAPIMessageResponse(err.Error()))
+		return
+	}
 	c.JSON(201, schemas.NewAPIResponse("User created", user))
 }
 
@@ -42,19 +50,20 @@ func (uc *UserController) Update(c *gin.Context) {
 		c.JSON(400, schemas.NewAPIMessageResponse("Invalid request"))
 		return
 	}
-	user = uc.UserService.Update(id, user)
-	if user.ID != "" {
-		c.JSON(200, schemas.NewAPIResponse("User updated successfully", user))
+	newUser, err := uc.UserService.Update(id, user)
+	if err != nil {
+		c.JSON(404, schemas.NewAPIMessageResponse(err.Error()))
 		return
 	}
-	c.JSON(404, schemas.NewAPIMessageResponse("User not found"))
+	c.JSON(200, schemas.NewAPIResponse("User updated successfully", newUser))
 }
 
 func (uc *UserController) Delete(c *gin.Context) {
 	id := c.Param("id")
-	if uc.UserService.Delete(id) {
-		c.JSON(200, schemas.NewAPIMessageResponse("User deleted successfully"))
+	_, err := uc.UserService.Delete(id)
+	if err != nil {
+		c.JSON(404, schemas.NewAPIMessageResponse(err.Error()))
 		return
 	}
-	c.JSON(404, schemas.NewAPIMessageResponse("User not found"))
+	c.JSON(200, schemas.NewAPIMessageResponse("User deleted successfully"))
 }
